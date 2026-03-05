@@ -128,6 +128,22 @@ export default {
           receipt: 'Receipt',
         },
       },
+      progress: {
+        title: 'My training',
+        dates: {
+          today: 'updated today',
+          yesterday: 'updated yesterday',
+          days_ago: 'updated {{count}} d. ago',
+        },
+        status: {
+          done: 'Done',
+          inProgress: 'In progress',
+        },
+        courseBadge: {
+          newProgram: 'New',
+          completedProgram: 'Сertificate',
+        }
+      },
     },
     activityCards: {
       courses_in_process: 'Courses in Progress',
@@ -142,6 +158,8 @@ export default {
 
     buttonsLabels: {
       goToCatalog: 'Go to Catalog',
+      open: 'Open',
+      continue: 'Continue',
     },
     adminPage: {
       header: {
