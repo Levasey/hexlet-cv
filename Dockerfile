@@ -1,5 +1,5 @@
 # Сборка
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:24-jdk-alpine AS build
 WORKDIR /app
 
 # Кэш зависимостей Gradle
