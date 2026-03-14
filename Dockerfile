@@ -1,38 +1,31 @@
-# Сборка
-FROM eclipse-temurin:24-jdk-alpine AS build
+# Этап сборки
+FROM gradle:8.14.1-jdk17 AS build
 WORKDIR /app
 
-# Кэш зависимостей Gradle
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle.kts .
-COPY settings.gradle.kts .
-COPY gradle.properties .
-COPY gradle/libs.versions.toml gradle/
+# Копируем только файлы для зависимостей (для кэширования)
+COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+COPY gradle ./gradle
 
-# Скачивание зависимостей (без сборки приложения)
-RUN ./gradlew dependencies --no-daemon --warning-mode all || true
+# Скачиваем зависимости
+RUN gradle dependencies --no-daemon || true
 
-# Исходники и сборка
-COPY src src
-COPY frontend frontend
+# Копируем исходники и собираем
+COPY src ./src
+RUN gradle build --no-daemon -x test
 
-# Сборка frontend (если нужна интеграция в бэкенд)
-RUN cd frontend && npm ci && npm run build
-
-# Копирование собранного frontend в static (если используется)
-# RUN cp -r frontend/dist/* src/main/resources/static/  # раскомментировать при необходимости
-
-RUN ./gradlew bootJar --no-daemon --warning-mode all -x test
-
-# Рантайм
-FROM eclipse-temurin:21-jre-alpine
+# Этап запуска
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN adduser -D appuser
-USER appuser
+# Создаем пользователя (безопасность)
+RUN adduser -D -H -h /app appuser
 
+# Копируем jar из этапа сборки
 COPY --from=build /app/build/libs/*.jar app.jar
+
+# Права доступа
+RUN chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
