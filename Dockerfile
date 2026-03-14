@@ -11,7 +11,7 @@ COPY gradle.properties .
 COPY gradle/libs.versions.toml gradle/
 
 # Скачивание зависимостей (без сборки приложения)
-RUN ./gradlew dependencies --no-daemon || true
+RUN ./gradlew dependencies --no-daemon --warning-mode all || true
 
 # Исходники и сборка
 COPY src src
@@ -23,7 +23,7 @@ RUN cd frontend && npm ci && npm run build
 # Копирование собранного frontend в static (если используется)
 # RUN cp -r frontend/dist/* src/main/resources/static/  # раскомментировать при необходимости
 
-RUN ./gradlew bootJar --no-daemon -x test
+RUN ./gradlew bootJar --no-daemon --warning-mode all -x test
 
 # Рантайм
 FROM eclipse-temurin:21-jre-alpine
