@@ -15,7 +15,7 @@ COPY src ./src
 RUN gradle build --no-daemon -x test
 
 # Этап запуска
-FROM eclipse-temurin:22-jre-alpine
+FROM eclipse-temurin:24-jre-alpine
 WORKDIR /app
 
 # Создаем пользователя (безопасность)
