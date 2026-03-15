@@ -1,5 +1,5 @@
 # Этап сборки
-FROM gradle:8.14.1-jdk24 AS build
+FROM gradle:8.14.1-jdk17 AS build
 WORKDIR /app
 
 # Копируем только файлы для зависимостей (для кэширования)
