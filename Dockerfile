@@ -29,7 +29,6 @@ WORKDIR /app
 
 # Создаем пользователя (безопасность)
 RUN adduser -D -H -h /app appuser
-COPY --from=backend-build /app/build/libs/*.jar app.jar
 
 # Копируем jar из этапа сборки
 COPY --from=build /app/build/libs/*.jar app.jar
