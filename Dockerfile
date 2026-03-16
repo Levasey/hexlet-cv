@@ -24,8 +24,9 @@ COPY src ./src
 COPY --from=frontend-build /app/frontend/dist /app/src/main/resources/static/
 
 # app.html без скриптов — React не загружается. Используем index.html (со скриптами) как шаблон Inertia
-RUN sed 's|<div id="app"></div>|<div id="app" data-page='\''@PageObject@'\''></div>|' \
-    /app/src/main/resources/static/index.html > /app/src/main/resources/templates/app.html
+RUN cp /app/src/main/resources/static/index.html /app/src/main/resources/templates/app.html && \
+    sed -i "s|<div id=\"app\"></div>|<div id=\"app\" data-page='@PageObject@'></div>|" \
+    /app/src/main/resources/templates/app.html
 
 RUN gradle build --no-daemon -x test
 
