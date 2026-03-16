@@ -10,8 +10,6 @@ RUN npx vite build
 FROM gradle:8.14.1-jdk17 AS build
 WORKDIR /app
 
-# Копируем только файлы для зависимостей (для кэширования)
-COPY --from=frontend-build /app/frontend/dist /app/src/main/resources/static/
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 
@@ -21,6 +19,10 @@ RUN gradle dependencies --no-daemon || true
 # Копируем конфиг checkstyle и исходники
 COPY config ./config
 COPY src ./src
+
+# Копируем фронтенд ПОСЛЕ src, чтобы static гарантированно попал в JAR
+COPY --from=frontend-build /app/frontend/dist /app/src/main/resources/static/
+
 RUN gradle build --no-daemon -x test
 
 # ---- Stage 3: Runtime ----
