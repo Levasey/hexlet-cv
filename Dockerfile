@@ -4,7 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-RUN npm run build
+RUN npx vite build
 
 # ---- Stage 2: Backend build ----
 FROM gradle:8.14.1-jdk17 AS build
