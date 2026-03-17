@@ -36,15 +36,20 @@ RUN gradle build --no-daemon -x test
 FROM eclipse-temurin:24-jre-alpine
 WORKDIR /app
 
+# socat для Render: сразу слушаем PORT, проксируем в Spring Boot (стартует ~2–3 мин)
+RUN apk add --no-cache socat
+
 # Создаем пользователя (безопасность)
 RUN adduser -D -H -h /app appuser
 
-# Копируем jar из этапа сборки
+# Копируем jar и entrypoint
 COPY --from=build /app/build/libs/*.jar app.jar
+COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Права доступа
 RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

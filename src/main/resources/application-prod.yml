@@ -1,6 +1,6 @@
 server:
-  address: 0.0.0.0  # Render требует привязку ко всем интерфейсам, иначе "No open ports detected"
-  port: ${PORT:8080}
+  address: 0.0.0.0
+  port: ${APPLICATION_PORT:8080}
 
 # Ускорение старта для Render (timeout проверки порта ~2 мин, Spring Boot без этого ~3 мин)
 spring:
