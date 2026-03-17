@@ -4,6 +4,8 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
+# Backend отправляет Home/Index, а во фронте есть только Home.tsx — создаём алиас
+RUN mkdir -p src/pages/Home && printf "export { default } from '../Home'\n" > src/pages/Home/Index.tsx
 RUN npx vite build
 
 # ---- Stage 2: Backend build ----
