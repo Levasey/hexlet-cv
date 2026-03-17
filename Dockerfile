@@ -20,19 +20,15 @@ RUN gradle dependencies --no-daemon || true
 COPY config ./config
 COPY src ./src
 
-# Копируем фронтенд ПОСЛЕ src, чтобы static гарантированно попал в JAR
+# Копируем фронтенд: assets в static и META-INF, app.html — напрямую из dist (обходим repo app.html без скриптов)
 COPY --from=frontend-build /app/frontend/dist /app/src/main/resources/static/
-
-# assets в META-INF/resources — Spring Boot отдаёт их в первую очередь (приоритет над static)
 RUN mkdir -p /app/src/main/resources/META-INF/resources && \
     cp -r /app/src/main/resources/static/assets /app/src/main/resources/META-INF/resources/ && \
     cp /app/src/main/resources/static/vite.svg /app/src/main/resources/META-INF/resources/ 2>/dev/null || true
 
-# app.html без скриптов — React не загружается. Используем index.html (со скриптами) как шаблон Inertia
-RUN mkdir -p /app/src/main/resources/templates && \
-    cp /app/src/main/resources/static/index.html /app/src/main/resources/templates/app.html && \
-    rm -f /app/src/main/resources/static/index.html && \
-    sed -i 's|<div id="app">[^<]*</div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
+# inertia4j использует templates/app.html — подменяем repo-версию на собранный index.html со скриптами
+COPY --from=frontend-build /app/frontend/dist/index.html /app/src/main/resources/templates/app.html
+RUN sed -i 's|<div id="app">[^<]*</div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
     /app/src/main/resources/templates/app.html && \
     grep -qE 'script[^>]*type=.*module' /app/src/main/resources/templates/app.html || (echo "ERROR: Script tags missing in app.html - frontend will not load" && exit 1)
 
