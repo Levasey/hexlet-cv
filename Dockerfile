@@ -24,10 +24,11 @@ COPY src ./src
 COPY --from=frontend-build /app/frontend/dist /app/src/main/resources/static/
 
 # app.html без скриптов — React не загружается. Используем index.html (со скриптами) как шаблон Inertia
-RUN cp /app/src/main/resources/static/index.html /app/src/main/resources/templates/app.html && \
-    sed -i 's|<div id="app"></div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
+RUN mkdir -p /app/src/main/resources/templates && \
+    cp /app/src/main/resources/static/index.html /app/src/main/resources/templates/app.html && \
+    sed -i 's|<div id="app">[^<]*</div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
     /app/src/main/resources/templates/app.html && \
-    grep -q 'script type="module"' /app/src/main/resources/templates/app.html || (echo "ERROR: Script tags missing in app.html - frontend will not load" && exit 1)
+    grep -qE 'script[^>]*type=.*module' /app/src/main/resources/templates/app.html || (echo "ERROR: Script tags missing in app.html - frontend will not load" && exit 1)
 
 RUN gradle build --no-daemon -x test
 
