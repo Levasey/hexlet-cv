@@ -1,4 +1,5 @@
 server:
+  address: 0.0.0.0  # Render требует привязку ко всем интерфейсам, иначе "No open ports detected"
   port: ${PORT:8080}
 
 spring:
