@@ -4,8 +4,23 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-# Backend отправляет Home/Index, а во фронте есть только Home.tsx — создаём алиас
-RUN mkdir -p src/pages/Home && printf "export { default } from '../Home'\n" > src/pages/Home/Index.tsx
+# Backend отправляет Home/Index и только pageSections; Home.tsx ждёт articles, trainingPrograms, performanceReview — обёртка с дефолтами
+RUN <<'SCRIPT'
+mkdir -p src/pages/Home
+cat > src/pages/Home/Index.tsx << 'EOF'
+import Index from '../Home'
+
+export default function HomeIndex(props: Record<string, unknown>) {
+  const p = props ?? {}
+  return <Index
+    articles={(p.articles as unknown[]) ?? []}
+    trainingPrograms={(p.trainingPrograms as unknown[]) ?? []}
+    performanceReview={(p.performanceReview as unknown[]) ?? []}
+    pageSections={(p.pageSections as unknown[]) ?? []}
+  />
+}
+EOF
+SCRIPT
 RUN npx vite build
 
 # ---- Stage 2: Backend build ----
