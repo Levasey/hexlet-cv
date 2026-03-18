@@ -44,10 +44,10 @@ RUN mkdir -p /app/src/main/resources/META-INF/resources && \
     cp /app/src/main/resources/static/vite.svg /app/src/main/resources/META-INF/resources/ 2>/dev/null || true
 
 # inertia4j использует templates/app.html — подменяем repo-версию на собранный index.html со скриптами
-#COPY --from=frontend-build /app/frontend/dist/index.html /app/src/main/resources/templates/app.html
-#RUN sed -i 's|<div id="app">[^<]*</div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
-  #  /app/src/main/resources/templates/app.html && \
-   # grep -qE 'script[^>]*type=.*module' /app/src/main/resources/templates/app.html || (echo "ERROR: Script tags missing in app.html - frontend will not load" && exit 1)
+COPY --from=frontend-build /app/frontend/dist/index.html /app/src/main/resources/templates/app.html
+RUN sed -i 's|<div id="app">[^<]*</div>|<div id="app" data-page='"'"'@PageObject@'"'"'></div>|' \
+    /app/src/main/resources/templates/app.html && \
+    grep -qE 'script[^>]*type=.*module' /app/src/main/resources/templates/app.html || (echo "ERROR: Script tags missing in app.html - frontend will not load" && exit 1)
 
 RUN gradle build --no-daemon -x test
 
