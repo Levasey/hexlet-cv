@@ -52,7 +52,7 @@ public class PageSectionControllerTest {
     private BCryptPasswordEncoder encoder;
 
     @Autowired
-    private ObjectMapper om;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private PageSectionMapper pageSectionMapper;
@@ -63,7 +63,6 @@ public class PageSectionControllerTest {
     private static final String ADMIN_EMAIL = "page_section_admin@example.com";
     private static final String CANDIDATE_EMAIL = "page_section_candidate@example.com";
 
-    private String adminToken;
     private PageSection section1;
     private PageSection section2;
 
@@ -71,20 +70,6 @@ public class PageSectionControllerTest {
     public void setUp() {
 
         userRepository.deleteAll();
-        var admin = User.builder()
-                .email(ADMIN_EMAIL)
-                .encryptedPassword(encoder.encode("password"))
-                .role(RoleType.ADMIN)
-                .build();
-        userRepository.save(admin);
-        var candidate = User.builder()
-                .email(CANDIDATE_EMAIL)
-                .encryptedPassword(encoder.encode("password"))
-                .role(RoleType.CANDIDATE)
-                .build();
-        userRepository.save(candidate);
-        adminToken = jwtUtils.generateAccessToken(ADMIN_EMAIL);
-
         pageSectionRepository.deleteAll();
 
         section1 = Instancio.of(modelGenerator.getPageSectionModel()).create();
@@ -99,8 +84,26 @@ public class PageSectionControllerTest {
         pageSectionRepository.save(section2);
     }
 
+    private String givenAdminAccessToken() {
+        userRepository.save(User.builder()
+                .email(ADMIN_EMAIL)
+                .encryptedPassword(encoder.encode("password"))
+                .role(RoleType.ADMIN)
+                .build());
+        return jwtUtils.generateAccessToken(ADMIN_EMAIL);
+    }
+
+    private static PageSectionCreateDTO arbitraryPageSectionCreateDto() {
+        var dto = new PageSectionCreateDTO();
+        dto.setPageKey("somePageKey");
+        dto.setSectionKey("someSectionKey");
+        return dto;
+    }
+
     @Test
     public void testGetAll() throws Exception {
+
+        var adminToken = givenAdminAccessToken();
 
         var response = mockMvc.perform(get("/api/pages/sections")
                 .cookie(new Cookie("access_token", adminToken))
@@ -118,6 +121,8 @@ public class PageSectionControllerTest {
 
     @Test
     public void testGetAllWithParams() throws Exception {
+
+        var adminToken = givenAdminAccessToken();
 
         var section3 = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section3.setPageKey(section1.getPageKey());
@@ -142,6 +147,8 @@ public class PageSectionControllerTest {
     @Test
     public void testGet() throws Exception {
 
+        var adminToken = givenAdminAccessToken();
+
         var response = mockMvc.perform(get("/api/pages/sections/" + section1.getId())
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true"))
@@ -159,6 +166,8 @@ public class PageSectionControllerTest {
     @Test
     public void testCreate() throws Exception {
 
+        var adminToken = givenAdminAccessToken();
+
         pageSectionRepository.delete(section1);
 
         var dto = new PageSectionCreateDTO();
@@ -172,7 +181,7 @@ public class PageSectionControllerTest {
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto)))
+                .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isFound());
 
         var section = assertDoesNotThrow(() ->
@@ -186,6 +195,8 @@ public class PageSectionControllerTest {
 
     @Test
     public void testUpdate() throws Exception {
+
+        var adminToken = givenAdminAccessToken();
 
         var dto = new PageSectionUpdateDTO();
         dto.setPageKey(JsonNullable.of("profile"));
@@ -202,7 +213,7 @@ public class PageSectionControllerTest {
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto)))
+                .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isSeeOther());
 
         var section = assertDoesNotThrow(() ->
@@ -219,6 +230,8 @@ public class PageSectionControllerTest {
     @Test
     public void testDelete() throws Exception {
 
+        var adminToken = givenAdminAccessToken();
+
         mockMvc.perform(delete("/api/pages/sections/" + section1.getId())
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true"))
@@ -231,29 +244,25 @@ public class PageSectionControllerTest {
     @Test
     public void testPostUnauthorizedReturns401() throws Exception {
 
-        var dto = new PageSectionCreateDTO();
-        dto.setPageKey("x");
-        dto.setSectionKey("y");
-        dto.setTitle("t");
-        dto.setContent("c");
-        dto.setActive(true);
+        var dto = arbitraryPageSectionCreateDto();
 
         mockMvc.perform(post("/api/pages/sections")
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto)))
+                .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void testPostAsNonAdminReturns403() throws Exception {
 
-        var dto = new PageSectionCreateDTO();
-        dto.setPageKey("x");
-        dto.setSectionKey("y");
-        dto.setTitle("t");
-        dto.setContent("c");
-        dto.setActive(true);
+        userRepository.save(User.builder()
+                .email(CANDIDATE_EMAIL)
+                .encryptedPassword(encoder.encode("password"))
+                .role(RoleType.CANDIDATE)
+                .build());
+
+        var dto = arbitraryPageSectionCreateDto();
 
         var candidateToken = jwtUtils.generateAccessToken(CANDIDATE_EMAIL);
 
@@ -261,7 +270,7 @@ public class PageSectionControllerTest {
                 .cookie(new Cookie("access_token", candidateToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(dto)))
+                .content(objectMapper.writeValueAsString(dto)))
             .andExpect(status().isForbidden());
     }
 }
