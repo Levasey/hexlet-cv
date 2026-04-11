@@ -103,15 +103,16 @@ public class PageSectionControllerTest {
     @Test
     public void testGetAll() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
 
-        var response = mockMvc.perform(get("/api/pages/sections")
+        // when
+        var result = mockMvc.perform(get("/api/pages/sections")
                 .cookie(new Cookie("access_token", adminToken))
-                .header("X-Inertia", "true"))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
+                .header("X-Inertia", "true"));
 
+        // then
+        var response = result.andExpect(status().isOk()).andReturn().getResponse();
         assertThat(response.getContentAsString())
             .contains(section1.getPageKey())
             .contains(section2.getPageKey())
@@ -122,22 +123,22 @@ public class PageSectionControllerTest {
     @Test
     public void testGetAllWithParams() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
-
         var section3 = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section3.setPageKey(section1.getPageKey());
         section3.setActive(section2.isActive());
         pageSectionRepository.save(section3);
 
-        var response = mockMvc.perform(get("/api/pages/sections")
+        // when
+        var result = mockMvc.perform(get("/api/pages/sections")
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true")
                 .param("page", section1.getPageKey())
-                .param("active", String.valueOf(section2.isActive())))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
+                .param("active", String.valueOf(section2.isActive())));
 
+        // then
+        var response = result.andExpect(status().isOk()).andReturn().getResponse();
         assertThat(response.getContentAsString())
             .doesNotContain(section1.getSectionKey())
             .doesNotContain(section2.getSectionKey())
@@ -147,15 +148,16 @@ public class PageSectionControllerTest {
     @Test
     public void testGet() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
 
-        var response = mockMvc.perform(get("/api/pages/sections/" + section1.getId())
+        // when
+        var result = mockMvc.perform(get("/api/pages/sections/" + section1.getId())
                 .cookie(new Cookie("access_token", adminToken))
-                .header("X-Inertia", "true"))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse();
+                .header("X-Inertia", "true"));
 
+        // then
+        var response = result.andExpect(status().isOk()).andReturn().getResponse();
         assertThatJson(response.getContentAsString()).and(
             v -> v.node("props.pageSections[0].id").isEqualTo(section1.getId()),
             v -> v.node("props.pageSections[0].pageKey").isEqualTo(section1.getPageKey()),
@@ -166,10 +168,9 @@ public class PageSectionControllerTest {
     @Test
     public void testCreate() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
-
         pageSectionRepository.delete(section1);
-
         var dto = new PageSectionCreateDTO();
         dto.setPageKey(section1.getPageKey());
         dto.setSectionKey(section1.getSectionKey());
@@ -177,16 +178,17 @@ public class PageSectionControllerTest {
         dto.setContent(section1.getContent());
         dto.setActive(section1.isActive());
 
-        var response = mockMvc.perform(post("/api/pages/sections")
+        // when
+        var result = mockMvc.perform(post("/api/pages/sections")
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isFound());
+                .content(objectMapper.writeValueAsString(dto)));
 
+        // then
+        result.andExpect(status().isFound());
         var section = assertDoesNotThrow(() ->
             pageSectionRepository.findBySectionKey(dto.getSectionKey()).orElseThrow());
-
         assertThat(section.getPageKey()).isEqualTo(dto.getPageKey());
         assertThat(section.getTitle()).isEqualTo(dto.getTitle());
         assertThat(section.getContent()).isEqualTo(dto.getContent());
@@ -196,33 +198,31 @@ public class PageSectionControllerTest {
     @Test
     public void testUpdate() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
-
         var dto = new PageSectionUpdateDTO();
         dto.setPageKey(JsonNullable.of("profile"));
         dto.setSectionKey(JsonNullable.of("tech_stack"));
         dto.setActive(JsonNullable.of(false));
-
         dto.setTitle(JsonNullable.undefined());
         dto.setContent(JsonNullable.undefined());
-
         var oldTitle = section1.getTitle();
         var oldContent = section1.getContent();
 
-        var response = mockMvc.perform(put("/api/pages/sections/" + section1.getId())
+        // when
+        var result = mockMvc.perform(put("/api/pages/sections/" + section1.getId())
                 .cookie(new Cookie("access_token", adminToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isSeeOther());
+                .content(objectMapper.writeValueAsString(dto)));
 
+        // then
+        result.andExpect(status().isSeeOther());
         var section = assertDoesNotThrow(() ->
             pageSectionRepository.findById(section1.getId()).orElseThrow());
-
         assertThat(section.getPageKey()).isEqualTo(dto.getPageKey().get());
         assertThat(section.getSectionKey()).isEqualTo(dto.getSectionKey().get());
         assertThat(section.isActive()).isEqualTo(dto.getActive().get());
-
         assertThat(section.getTitle()).isEqualTo(oldTitle);
         assertThat(section.getContent()).isEqualTo(oldContent);
     }
@@ -230,13 +230,16 @@ public class PageSectionControllerTest {
     @Test
     public void testDelete() throws Exception {
 
+        // given
         var adminToken = givenAdminAccessToken();
 
-        mockMvc.perform(delete("/api/pages/sections/" + section1.getId())
+        // when
+        var result = mockMvc.perform(delete("/api/pages/sections/" + section1.getId())
                 .cookie(new Cookie("access_token", adminToken))
-                .header("X-Inertia", "true"))
-            .andExpect(status().isSeeOther());
+                .header("X-Inertia", "true"));
 
+        // then
+        result.andExpect(status().isSeeOther());
         assertThat(pageSectionRepository.existsById(section1.getId())).isFalse();
         assertThat(pageSectionRepository.existsById(section2.getId())).isTrue();
     }
@@ -244,33 +247,39 @@ public class PageSectionControllerTest {
     @Test
     public void testPostUnauthorizedReturns401() throws Exception {
 
+        // given
         var dto = arbitraryPageSectionCreateDto();
 
-        mockMvc.perform(post("/api/pages/sections")
+        // when
+        var result = mockMvc.perform(post("/api/pages/sections")
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isUnauthorized());
+                .content(objectMapper.writeValueAsString(dto)));
+
+        // then
+        result.andExpect(status().isUnauthorized());
     }
 
     @Test
     public void testPostAsNonAdminReturns403() throws Exception {
 
+        // given
         userRepository.save(User.builder()
                 .email(CANDIDATE_EMAIL)
                 .encryptedPassword(encoder.encode("password"))
                 .role(RoleType.CANDIDATE)
                 .build());
-
         var dto = arbitraryPageSectionCreateDto();
-
         var candidateToken = jwtUtils.generateAccessToken(CANDIDATE_EMAIL);
 
-        mockMvc.perform(post("/api/pages/sections")
+        // when
+        var result = mockMvc.perform(post("/api/pages/sections")
                 .cookie(new Cookie("access_token", candidateToken))
                 .header("X-Inertia", "true")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-            .andExpect(status().isForbidden());
+                .content(objectMapper.writeValueAsString(dto)));
+
+        // then
+        result.andExpect(status().isForbidden());
     }
 }
