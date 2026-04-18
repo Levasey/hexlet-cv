@@ -20,7 +20,6 @@ import io.hexlet.cv.util.JWTUtils;
 import io.hexlet.cv.utils.ModelGenerator;
 import jakarta.servlet.http.Cookie;
 import org.instancio.Instancio;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,12 +57,6 @@ public class PageSectionControllerTest {
     private static final String ADMIN_EMAIL = "page_section_admin@example.com";
     private static final String CANDIDATE_EMAIL = "page_section_candidate@example.com";
 
-    @BeforeEach
-    public void cleanRepositories() {
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-    }
-
     private String givenAdminAccessToken() {
         userRepository.save(User.builder()
                 .email(ADMIN_EMAIL)
@@ -84,6 +77,9 @@ public class PageSectionControllerTest {
     public void testGetAll() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -113,6 +109,9 @@ public class PageSectionControllerTest {
     public void testGetAllWithParams() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -148,6 +147,9 @@ public class PageSectionControllerTest {
     public void testGet() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -172,6 +174,9 @@ public class PageSectionControllerTest {
     public void testCreate() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var adminToken = givenAdminAccessToken();
 
         var template = Instancio.of(modelGenerator.getPageSectionModel()).create();
@@ -205,6 +210,9 @@ public class PageSectionControllerTest {
     public void testUpdate() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -242,6 +250,9 @@ public class PageSectionControllerTest {
     public void testDelete() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -268,6 +279,9 @@ public class PageSectionControllerTest {
     public void testPostUnauthorizedReturns401() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         var dto = arbitraryPageSectionCreateDto();
 
         // when
@@ -284,6 +298,9 @@ public class PageSectionControllerTest {
     public void testPostAsNonAdminReturns403() throws Exception {
 
         // given
+        userRepository.deleteAll();
+        pageSectionRepository.deleteAll();
+
         userRepository.save(User.builder()
                 .email(CANDIDATE_EMAIL)
                 .encryptedPassword(encoder.encode("password"))
