@@ -28,9 +28,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class PageSectionControllerTest {
 
     @Autowired
@@ -77,9 +79,6 @@ public class PageSectionControllerTest {
     public void testGetAll() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -109,9 +108,6 @@ public class PageSectionControllerTest {
     public void testGetAllWithParams() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -147,9 +143,6 @@ public class PageSectionControllerTest {
     public void testGet() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -174,9 +167,6 @@ public class PageSectionControllerTest {
     public void testCreate() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var adminToken = givenAdminAccessToken();
 
         var template = Instancio.of(modelGenerator.getPageSectionModel()).create();
@@ -210,9 +200,6 @@ public class PageSectionControllerTest {
     public void testUpdate() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -250,9 +237,6 @@ public class PageSectionControllerTest {
     public void testDelete() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var section1Draft = Instancio.of(modelGenerator.getPageSectionModel()).create();
         section1Draft.setPageKey("main");
         var section1 = pageSectionRepository.save(section1Draft);
@@ -279,9 +263,6 @@ public class PageSectionControllerTest {
     public void testPostUnauthorizedReturns401() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         var dto = arbitraryPageSectionCreateDto();
 
         // when
@@ -298,9 +279,6 @@ public class PageSectionControllerTest {
     public void testPostAsNonAdminReturns403() throws Exception {
 
         // given
-        userRepository.deleteAll();
-        pageSectionRepository.deleteAll();
-
         userRepository.save(User.builder()
                 .email(CANDIDATE_EMAIL)
                 .encryptedPassword(encoder.encode("password"))
